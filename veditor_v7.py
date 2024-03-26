@@ -110,7 +110,7 @@ class VideoPlayerApp:
         self.elements = [f'{i}:element{i}' for i in range(self.len_str)]
 
         self.path = os.path.dirname(self.video_source) if self.video_source else ''
-        self.sd_file_path = os.path.join(self.path,'config.sd')
+        self.sd_file_path = os.path.join(self.path,'elements.txt')
         # Проверяем наличие файла с расшифровками меток и загружаем значения, если файл существует
         if os.path.isfile(self.sd_file_path):
             self.elements, self.len_str  = read_sd(self.sd_file_path) 
@@ -381,17 +381,18 @@ v - Copy label rewind"""
         self.checkboxes.append(ttk.Entry(self.listbox_frame,  textvariable=self.vars[0], width=3,validate="key", validatecommand=check))
         self.checkboxes[0].insert(0, tlbl[:3])
         self.checkboxes[0].grid(row=0, column=0, padx=px, pady=py, sticky="w")
-        self.label1 = ttk.Label(self.listbox_frame, text = self.elements[0])
-        self.label1.grid(row=0, column=1, padx=px, pady=py, sticky="w")
+        self.label1 = ttk.Label(self.listbox_frame, text = 'Номер оцениваемого элемента (0-не оценивается)')
+        self.label1.grid(row=0, column=0, padx=30, pady=py, sticky="w")
         for i in range(1, self.len_str - 2):
             self.vars.append(tk.IntVar(value=int(tlbl[i+2])))
             self.checkboxes.append(ttk.Checkbutton(self.listbox_frame, 
-                                        text = self.elements[i], 
+                                        text = self.elements[i].split(';')[1], 
                                         command=checkbutton_changed,
                                         variable=self.vars[i], 
                                         onvalue=1, offvalue=0))
             self.checkboxes[i].config(state=tk.NORMAL)
-            self.checkboxes[i].grid(row=i, column=0, padx=px, pady=py, sticky="w")
+            if self.elements[i].split(';')[0]=='1':
+                self.checkboxes[i].grid(row=i, column=0, padx=px, pady=py, sticky="w")
         for chb in self.checkboxes: chb.config(state=tk.DISABLED)
 
     def update_checkboxes(self):
