@@ -1,3 +1,5 @@
+# pip install opencv-python
+# pip install pillow
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
