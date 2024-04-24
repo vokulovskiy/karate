@@ -60,10 +60,9 @@ def pose2json(vfile):
             pose_landmarks_per_frame.append(json_dict)
 
         # Отрисовка ключевых точек (опционально)
-        # mp_drawing = mp.solutions.drawing_utils
-        # mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
-        # cv2.imshow('Image', img)
+        mp_drawing = mp.solutions.drawing_utils
+        mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+        cv2.imshow('Image', img)
         if cv2.waitKey(1) == ord('q'):
             break
 
@@ -80,7 +79,7 @@ def pose2json(vfile):
     with open(json_file_name, 'w') as json_file:
         json.dump(pose_landmarks_per_frame, json_file, indent=2)
 
-dirs = [r'video\Камера_1',r'video\Камера_2',r'video\Камера_3',r'video\Камера_4']
+dirs = [r'C:\temp\Cam_1_1920x1080x60']
 files = []
 cnt=0
 for d in dirs:

@@ -107,7 +107,7 @@ class VideoPlayerApp:
 
         # Список с расшифровками меток по умолчанию
         self.len_str = 10
-        self.elements = [f'{i}:element{i}' for i in range(self.len_str)]
+        self.elements = [f';{i}:element{i}' for i in range(self.len_str)]
 
         self.path = os.path.dirname(self.video_source) if self.video_source else ''
         self.sd_file_path = os.path.join(self.path,'elements.txt')
@@ -237,6 +237,9 @@ class VideoPlayerApp:
     # Обновление кадра видео
     def update_frame(self):
         ret, frame = self.vid.read()
+        # Получаем время кадра в миллисекундах
+        self.frame_time_ms = self.vid.get(cv2.CAP_PROP_POS_MSEC)
+
         if ret:
             frame = cv2.resize(frame, (self.width, self.height))
             self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))

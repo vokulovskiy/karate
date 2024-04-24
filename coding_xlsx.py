@@ -56,7 +56,7 @@ for sh in sheet_names:
             try:
                 el = commands[' '.join(row['Название элемента'].strip().split())]
                 label = cr_label(n_el, el, len_label, labels)
-                print(f'{n_start}-{n_stop}:{label}',file=f)
+                print(f'{n_start*2}-{n_stop*2}:{label}',file=f)
             except:
                 if len(row['Название элемента'])==0:
                     break
