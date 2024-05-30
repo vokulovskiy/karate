@@ -28,7 +28,7 @@ def extract_pose_landmarks(video_file, model_complexity=1, landmarks_to_use=None
     landmarks_to_use = [i for i in range(33)] if landmarks_to_use is None else landmarks_to_use
     for i in landmarks_to_use:
         s = str(i)
-        row.extend(['X'+s,'Y'+s,'Z'+s,'V'+s])
+        row.extend(['X_'+s,'Y_'+s,'Z_'+s,'V_'+s])
 
     writer.writerow(row)
     cap = cv2.VideoCapture(video_file)
@@ -70,16 +70,19 @@ def extract_pose_landmarks(video_file, model_complexity=1, landmarks_to_use=None
         # Записываем строку с номером кадра, временем и данными ключевых точек
         writer.writerow([frame_idx, round(frame_time_ms)] + row_data)
 
-      # Рисуем скелет на изображении (опционально)
-      mp_drawing.draw_landmarks(
-          image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-      cv2.imshow('Image', image)
-      if cv2.waitKey(1) == ord('q'):
-            break
+      # # Рисуем скелет на изображении (опционально)
+      # mp_drawing.draw_landmarks(
+      #     image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+      # cv2.imshow('Image', image)
+      # if cv2.waitKey(1) == ord('q'):
+      #       break
 
       frame_idx += 1
 
     cap.release()
 
-kd = [0,11,12,13,14,15,16,23,24,25,26,27,28,29,30,31,32]
-extract_pose_landmarks(r"C:\temp\Cam_1_1920x1080x60\20240209_181457.mp4",1,kd)
+kd = [0,2,5,11,12,13,14,15,16,23,24,25,26,27,28,29,30,31,32]
+# r"C:\temp\Cam_1_1920x1080x60\20240209_181457.mp4",r"C:\temp\Cam_2_1920x1080x60\IMG_3468.mp4"
+files = [r"C:\temp\Cam_3_1920x1080x60\20240209_181458.mp4",r"C:\temp\Cam_4_1920x1080x60\Тайкёку соно ити 1.mp4"]
+for file in files:
+  extract_pose_landmarks(file,1,kd)

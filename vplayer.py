@@ -1,22 +1,38 @@
 import cv2
 import tkinter as tk
 from tkinter import ttk
+from tkinter import LEFT, BOTH, RAISED
 from PIL import Image, ImageTk
 import pandas as pd
 
+df = pd.read_excel(r'C:\Users\user\Documents\python\karate\video_base_index.xlsx')
+df_el = pd.read_csv('elements.csv',delimiter=';')
+
 def process_frames(frames): 
-    text_output = "Frame data: "
-    for frame in frames:
-        text_output += f"{frame.shape}, "
+    text_output = f"File: {frames[0]}, frame: {frames[1]}"
+    ff = frames[0].split('/')[-1]
+    fp = r'C:/Users/user/Documents/python/karate/DS/DATASET/' + df[df['Камера_1']==ff].fcsv.to_list()[0]
+    dfp = pd.read_csv(fp)
+    fr = int(frames[1])
+    try:
+        nelem = dfp[dfp.Frame==fr].N_ELEM.to_list()[0]
+        el = dfp[dfp.Frame==fr].iloc[0,6:]
+        el = el[el==1].index.to_list()
+        elements = [df_el[df_el.elem==e].name_el.to_list()[0] for e in el]
+        text_output = 'Обнаружены элементы:'+ ','.join(elements)
+    except:
+        text_output = ''
     return text_output
 
 def video_player(files,frames):
     class VideoPlayer:
         def __init__(self, master, video_path, frame_num):
             self.master = master
+            self.video_path = video_path
             self.cap = cv2.VideoCapture(video_path)
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
             self.frame = None
+            self.frame_num = frame_num
             self.paused = True
             self.frame_w = 0 # признак обновления кадра
             self.width = fwidth
@@ -37,7 +53,7 @@ def video_player(files,frames):
             self.time_entry = tk.Entry(self.video_frame)
             self.time_entry.grid(row=2, column=0)
             
-            self.master.protocol("WM_DELETE_WINDOW", self.quit_app)  # Действие при закрытии окна
+            #self.master.protocol("WM_DELETE_WINDOW", self.quit_app)  # Действие при закрытии окна
 
             # Обновляем кадр видео
             self.update_frame()
@@ -56,11 +72,13 @@ def video_player(files,frames):
 
                     # Обновляем номер кадра воспроизведения
                     self.time_entry.delete(0, tk.END)
-                    self.time_entry.insert(0, self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+                    self.frame_num = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+                    self.time_entry.insert(0, self.frame_num)
 
                     proc = sum([player.frame_w for player in players]) # проверяем, что кадры во всех плеерах обновились
                     if proc == len(players): # кадры во всех плеерах обновились
-                        frames = [player.frame for player in players]
+                        #frames = [player.frame for player in players] # отдаем кадры во внешнюю функцию для обработки
+                        frames = [players[0].video_path, players[0].frame_num] # отдаем во внешнюю функцию имя видеофайла и номер кадра
                         text_output = process_frames(frames)
                         # Обновляем метку message_label с выводом текста
                         message_label.config(text=text_output)
@@ -89,42 +107,52 @@ def video_player(files,frames):
     root.attributes('-fullscreen', True)
     max_width = root.winfo_screenwidth()
     max_height = root.winfo_screenheight()
-    root.geometry(f"{max_width-max_width//10}x{max_height}+0+0")
+    max_width = min(1600,max_width)
+    max_height = min(900,max_height)
+
+    root.geometry(f"{max_width-max_width//8}x{max_height}+0+0")
     root.attributes('-fullscreen', False)
     nplayers = len(files)
+
     # Создаем фрейм для кнопок
     button_frame = tk.Frame(root)
+
+    # Создаем фрейм для видео
+    v_frame = tk.Frame(button_frame, relief=RAISED, borderwidth=1)
+    v_frame.pack(fill=BOTH, expand=True)
+    button_frame.pack(fill=BOTH, expand=True)
+
      # Создаем кнопку Play/Pause
     play_pause_button = tk.Button(button_frame, text="Воспроизвести/Пауза", command=lambda: [player.play_pause() for player in players])
     # Создаем кнопку Исполнитель
     ex_button = tk.Button(button_frame, text="Исполнитель", command=select_ex)
     # Создаем метку для вывода сообщений
     message_label = tk.Label(button_frame, text="Message")
+    play_pause_button.pack(side=LEFT, padx=5, pady=5)
+    ex_button.pack(side=LEFT, padx=5, pady=5)
+    message_label.pack(side=LEFT, padx=5, pady=5)
     
     
     rasp = [[0,0],[0,1],[1,0],[1,1]]
     if nplayers == 1:
-        fwidth=max_width - max_width//9
+
+        fwidth=max_width # - max_width//9
         fheight=max_height - max_height//9
-        button_frame.grid(row=1)
-        play_pause_button.grid(row=0, column=0)
-        ex_button.grid(row=0, column=1)
-        message_label.grid(row=0, column=2)
-        players = [VideoPlayer(root, files[0], frames[0])]
+        #button_frame.grid(row=1)
+        players = [VideoPlayer(v_frame, files[0], frames[0])]
         players[0].video_frame.grid(row=0, column=0)
     else:
         fwidth=max_width//2 - max_width//15
         fheight=max_height//2 - max_height//15
-        button_frame.grid(row=2)
-        play_pause_button.grid(row=0, column=0)
-        ex_button.grid(row=0, column=1)
-        message_label.grid(row=0, column=2)
+        #button_frame.grid(row=2)
         # Создаем видеоплееры
-        players = [VideoPlayer(root, file, frames[i]) for i,file in enumerate(files)]
+        players = [VideoPlayer(v_frame, file, frames[i]) for i,file in enumerate(files)]
         # Размещаем видеоплееры в шахматном порядке
         for i in range(nplayers):
             players[i].video_frame.grid(row=rasp[i][0], column=rasp[i][1])
-
+        # play_pause_button.grid(row=0, column=0)
+        # ex_button.grid(row=0, column=1)
+        # message_label.grid(row=0, column=2)
     for i in range(nplayers):
             players[i].paused = False
     # Запускаем главный цикл Tkinter
@@ -148,8 +176,9 @@ def select_executor():
         root1.quit()  # Закрываем окно после выбора
         root1.destroy()
         i = executors.index(selected_executor)
-        files = [dirs[j]+df.loc[i,[f'Камера_{j+1}']].values[0] for j in range(4)]
-        frames = [df.loc[i,[f'df{j+1}']].values[0] for j in range(4)]
+        count_camera = 4
+        files = [dirs[j]+df.loc[i,[f'Камера_{j+1}']].values[0] for j in range(count_camera)]
+        frames = [df.loc[i,[f'df{j+1}']].values[0] for j in range(count_camera)]
         video_player(files,frames)
 
     # Создаем комбобокс (выпадающий список)
